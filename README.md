@@ -6,7 +6,10 @@ Was built to clean up SSDs.
 
 ### Install
 
-`go install github.com/selfup/filesizefinder`
+```
+go get github.com/selfup/filesizefinder
+go install github.com/selfup/filesizefinder
+```
 
 ### Use
 
