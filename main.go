@@ -5,24 +5,22 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"sync"
 )
 
 func main() {
-	var direction string
-	flag.StringVar(&direction, "d", "", "direction of paths back (windows) or forward (unix/linux)")
-
 	var size string
 	flag.StringVar(&size, "s", "", "size: 1MB,10MB,100MB,1GB,10GB,100GB,1TB")
 
-	var folder string
-	flag.StringVar(&folder, "f", "", "folder/directory to start scanning recursively from")
+	var directory string
+	flag.StringVar(&directory, "d", "", "directory to start scanning recursively from")
 
 	flag.Parse()
 
-	p := NewFileSizeFinder(direction, size)
+	p := NewFileSizeFinder(size)
 
-	p.Scan(folder)
+	p.Scan(directory)
 
 	for _, file := range p.Files {
 		fmt.Println(file)
@@ -32,25 +30,19 @@ func main() {
 // FileSizeFinder struct contains needed data to perform concurrent operations
 type FileSizeFinder struct {
 	mutex     sync.Mutex
-	waitGroup sync.WaitGroup
 	Files     []string
 	Direction string
 	Size      int64
 }
 
 // NewFileSizeFinder creates a pointer to FileSizeFinder with default values
-func NewFileSizeFinder(direction string, size string) *FileSizeFinder {
+func NewFileSizeFinder(size string) *FileSizeFinder {
 	lff := new(FileSizeFinder)
 
-	switch direction {
-	case "backslash":
+	if runtime.GOOS == "windows" {
 		lff.Direction = "\\"
-		break
-	case "forwardslash":
+	} else {
 		lff.Direction = "/"
-		break
-	default:
-		panic("please provide backslash or forwardslash for directions")
 	}
 
 	switch size {
@@ -88,6 +80,12 @@ func (lff *FileSizeFinder) Scan(directory string) {
 		panic("please provide a directory")
 	}
 
+	_, err := ioutil.ReadDir(directory)
+	if err != nil {
+		fmt.Println(err)
+		panic("cannot read entry point - invalid directory!")
+	}
+
 	lff.findFiles(directory, "")
 }
 
@@ -105,7 +103,10 @@ func (lff *FileSizeFinder) findFiles(directory string, prefix string) {
 		}
 	}
 
-	lff.waitGroup.Add(len(files))
+	var fileGroup sync.WaitGroup
+	var dirGroup sync.WaitGroup
+
+	fileGroup.Add(len(files))
 
 	for _, file := range files {
 		func(f os.FileInfo, d string) {
@@ -113,16 +114,23 @@ func (lff *FileSizeFinder) findFiles(directory string, prefix string) {
 				lff.mutex.Lock()
 				lff.Files = append(lff.Files, d+lff.Direction+f.Name())
 				lff.mutex.Unlock()
-				lff.waitGroup.Done()
+				fileGroup.Done()
 			} else {
-				lff.waitGroup.Done()
+				fileGroup.Done()
 			}
 		}(file, directory)
 	}
 
-	lff.waitGroup.Wait()
+	fileGroup.Wait()
+
+	dirGroup.Add(len(dirs))
 
 	for _, dir := range dirs {
-		lff.findFiles(directory+lff.Direction+dir.Name(), directory)
+		go func(d os.FileInfo, dd string) {
+			lff.findFiles(dd+lff.Direction+d.Name(), dd)
+			dirGroup.Done()
+		}(dir, directory)
 	}
+
+	dirGroup.Wait()
 }
