@@ -28,8 +28,9 @@ New line delimited file paths
 Example on Windows:
 
 ```
-C:\\Users\selfup\Videos\2019-08-15 18-26-12.flv
-C:\\Users\selfup\Videos\OBS\2019-08-12_12-10-46.flv
+$ filesizefinder -d=backslash -s=1GB -f="C:\\Users"
+C:\Users\selfup\Videos\2019-08-15 18-26-12.flv
+C:\Users\selfup\Videos\OBS\2019-08-12_12-10-46.flv
 ```
 
 ### Help
