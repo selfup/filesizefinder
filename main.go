@@ -103,34 +103,25 @@ func (lff *FileSizeFinder) findFiles(directory string, prefix string) {
 		}
 	}
 
-	var fileGroup sync.WaitGroup
-	var dirGroup sync.WaitGroup
-
-	fileGroup.Add(len(files))
-
 	for _, file := range files {
-		func(f os.FileInfo, d string) {
-			if f.Size() > lff.Size {
-				lff.mutex.Lock()
-				lff.Files = append(lff.Files, d+lff.Direction+f.Name())
-				lff.mutex.Unlock()
-				fileGroup.Done()
-			} else {
-				fileGroup.Done()
-			}
-		}(file, directory)
+		if file.Size() >= lff.Size {
+			lff.mutex.Lock()
+			lff.Files = append(lff.Files, directory+lff.Direction+file.Name())
+			lff.mutex.Unlock()
+		}
 	}
 
-	fileGroup.Wait()
+	if len(dirs) > 0 {
+		var dirGroup sync.WaitGroup
+		dirGroup.Add(len(dirs))
 
-	dirGroup.Add(len(dirs))
+		for _, dir := range dirs {
+			go func(d os.FileInfo, dd string, ddd string) {
+				lff.findFiles(dd+ddd+d.Name(), dd)
+				dirGroup.Done()
+			}(dir, directory, lff.Direction)
+		}
 
-	for _, dir := range dirs {
-		go func(d os.FileInfo, dd string) {
-			lff.findFiles(dd+lff.Direction+d.Name(), dd)
-			dirGroup.Done()
-		}(dir, directory)
+		dirGroup.Wait()
 	}
-
-	dirGroup.Wait()
 }
