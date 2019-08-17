@@ -111,13 +111,14 @@ func (lff *FileSizeFinder) findFiles(directory string, prefix string) {
 		}
 	}
 
-	if len(dirs) > 0 {
+	dirLen := len(dirs)
+	if dirLen > 0 {
 		var dirGroup sync.WaitGroup
-		dirGroup.Add(len(dirs))
+		dirGroup.Add(dirLen)
 
 		for _, dir := range dirs {
-			go func(d os.FileInfo, dd string, ddd string) {
-				lff.findFiles(dd+ddd+d.Name(), dd)
+			go func(diR os.FileInfo, direcTory string, direcTion string) {
+				lff.findFiles(direcTory+direcTion+diR.Name(), direcTory)
 				dirGroup.Done()
 			}(dir, directory, lff.Direction)
 		}
