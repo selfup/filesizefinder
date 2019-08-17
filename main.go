@@ -76,14 +76,9 @@ func NewFileSizeFinder(size string) *FileSizeFinder {
 
 // Scan is a concurrent/parallel directory walker
 func (lff *FileSizeFinder) Scan(directory string) {
-	if directory == "" {
-		panic("please provide a directory")
-	}
-
 	_, err := ioutil.ReadDir(directory)
 	if err != nil {
-		fmt.Println(err)
-		panic("cannot read entry point - invalid directory!")
+		panic(err)
 	}
 
 	lff.findFiles(directory, "")
