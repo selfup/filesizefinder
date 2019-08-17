@@ -15,11 +15,11 @@ go install github.com/selfup/filesizefinder
 
 **Windows**
 
-filesizefinder -s=1GB -d="C:\\Users"
+`filesizefinder -s=1GB -d="C:\\Users"`
 
 **Unix/Linux**
 
-filesizefinder -s=1GB -d="\$HOME"
+`filesizefinder -s=1GB -d="$HOME"`
 
 ### Output
 
