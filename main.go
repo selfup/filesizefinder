@@ -18,11 +18,11 @@ func main() {
 
 	flag.Parse()
 
-	p := NewFileSizeFinder(size)
+	nfsf := NewFileSizeFinder(size)
 
-	p.Scan(directory)
+	nfsf.Scan(directory)
 
-	for _, file := range p.Files {
+	for _, file := range nfsf.Files {
 		fmt.Println(file)
 	}
 }
@@ -37,54 +37,54 @@ type FileSizeFinder struct {
 
 // NewFileSizeFinder creates a pointer to FileSizeFinder with default values
 func NewFileSizeFinder(size string) *FileSizeFinder {
-	lff := new(FileSizeFinder)
+	fsf := new(FileSizeFinder)
 
 	if runtime.GOOS == "windows" {
-		lff.Direction = "\\"
+		fsf.Direction = "\\"
 	} else {
-		lff.Direction = "/"
+		fsf.Direction = "/"
 	}
 
 	switch size {
 	case "1MB":
-		lff.Size = 1000
+		fsf.Size = 1000
 		break
 	case "10MB":
-		lff.Size = 10000
+		fsf.Size = 10000
 		break
 	case "100MB":
-		lff.Size = 1000000
+		fsf.Size = 1000000
 		break
 	case "1GB":
-		lff.Size = 1000000000
+		fsf.Size = 1000000000
 		break
 	case "10GB":
-		lff.Size = 10000000000
+		fsf.Size = 10000000000
 		break
 	case "100GB":
-		lff.Size = 1000000000000
+		fsf.Size = 1000000000000
 		break
 	case "1TB":
-		lff.Size = 1000000000000000
+		fsf.Size = 1000000000000000
 		break
 	default:
 		panic("please provide a size 1MB 10MB 100MB 1GB 10GB 100GB 1TB")
 	}
 
-	return lff
+	return fsf
 }
 
 // Scan is a concurrent/parallel directory walker
-func (lff *FileSizeFinder) Scan(directory string) {
+func (f *FileSizeFinder) Scan(directory string) {
 	_, err := ioutil.ReadDir(directory)
 	if err != nil {
 		panic(err)
 	}
 
-	lff.findFiles(directory, "")
+	f.findFiles(directory, "")
 }
 
-func (lff *FileSizeFinder) findFiles(directory string, prefix string) {
+func (f *FileSizeFinder) findFiles(directory string, prefix string) {
 	paths, _ := ioutil.ReadDir(directory)
 
 	var dirs []os.FileInfo
@@ -99,10 +99,10 @@ func (lff *FileSizeFinder) findFiles(directory string, prefix string) {
 	}
 
 	for _, file := range files {
-		if file.Size() >= lff.Size {
-			lff.mutex.Lock()
-			lff.Files = append(lff.Files, directory+lff.Direction+file.Name())
-			lff.mutex.Unlock()
+		if file.Size() >= f.Size {
+			f.mutex.Lock()
+			f.Files = append(f.Files, directory+f.Direction+file.Name())
+			f.mutex.Unlock()
 		}
 	}
 
@@ -113,9 +113,9 @@ func (lff *FileSizeFinder) findFiles(directory string, prefix string) {
 
 		for _, dir := range dirs {
 			go func(diR os.FileInfo, direcTory string, direcTion string) {
-				lff.findFiles(direcTory+direcTion+diR.Name(), direcTory)
+				f.findFiles(direcTory+direcTion+diR.Name(), direcTory)
 				dirGroup.Done()
-			}(dir, directory, lff.Direction)
+			}(dir, directory, f.Direction)
 		}
 
 		dirGroup.Wait()
