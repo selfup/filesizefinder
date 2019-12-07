@@ -11,7 +11,7 @@ import (
 
 func main() {
 	var size string
-	flag.StringVar(&size, "s", "", "size: 1MB,10MB,100MB,1GB,10GB,100GB,1TB")
+	flag.StringVar(&size, "s", "", "size: 1GB,10GB,100GB,1TB")
 
 	var directory string
 	flag.StringVar(&directory, "d", "", "directory to start scanning recursively from")
@@ -46,15 +46,6 @@ func NewFileSizeFinder(size string) *FileSizeFinder {
 	}
 
 	switch size {
-	case "1MB":
-		fsf.Size = 1000
-		break
-	case "10MB":
-		fsf.Size = 10000
-		break
-	case "100MB":
-		fsf.Size = 1000000
-		break
 	case "1GB":
 		fsf.Size = 1000000000
 		break

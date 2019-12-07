@@ -41,5 +41,5 @@ Usage of filesizefinder:
   -e string
         directory to start scanning recursively from
   -s string
-        size: 1MB,10MB,100MB,1GB,10GB,100GB,1TB
+        size: 1GB,10GB,100GB,1TB
 ```
