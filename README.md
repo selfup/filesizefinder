@@ -21,6 +21,16 @@ go install github.com/selfup/filesizefinder
 
 `filesizefinder -s=1GB -d="$HOME"`
 
+### Performance
+
+```
+$ time filesizefinder.exe -s=1GB -d="C:\\Users" > .results
+
+real 0m4.456s
+user 0m0.000s
+sys 0m0.016s
+```
+
 ### Output
 
 New line delimited file paths
