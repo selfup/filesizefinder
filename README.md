@@ -1,3 +1,11 @@
+# ARCHIVED
+
+### Successor lives on!
+
+Please use [scnnr](https://github.com/selfup/scnnr) which has this mode built-in!
+
+scnnr: https://github.com/selfup/scnnr
+
 # File Size Finder
 
 Find files, big or small. Much faster than File Explorer in Windows.
